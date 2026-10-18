@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "666271817611",
+    "project_id": "kp-pz31-kobrin",
+    "storage_bucket": "kp-pz31-kobrin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666271817611:android:0cbe49404d182dafd5598e",
+        "android_client_info": {
+          "package_name": "com.example.board_games"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWdjZApY0D4z2YBhGKxKLZwJk9KqUn9-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
