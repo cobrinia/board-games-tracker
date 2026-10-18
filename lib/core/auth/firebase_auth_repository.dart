@@ -14,10 +14,9 @@ import 'auth_repository.dart';
 /// user can understand, and reports unexpected errors to Crashlytics.
 class FirebaseAuthRepository extends AuthRepository {
   FirebaseAuthRepository({
-    required AnalyticsService analytics,
+    required this._analytics,
     FirebaseAuth? auth,
-  }) : _analytics = analytics,
-       _auth = auth ?? FirebaseAuth.instance {
+  }) : _auth = auth ?? FirebaseAuth.instance {
     // userChanges() fires on sign-in, sign-out and profile updates. Its first
     // event tells us whether a saved session was restored.
     _subscription = _auth.userChanges().listen((user) {

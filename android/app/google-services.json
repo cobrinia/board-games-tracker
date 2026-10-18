@@ -12,7 +12,20 @@
           "package_name": "com.example.board_games"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "666271817611-c8669quc4l2s45bslgs401ifd7d0vq7q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.board_games",
+            "certificate_hash": "40803af2f1973a63a2d4c949d84526affe96d781"
+          }
+        },
+        {
+          "client_id": "666271817611-mb5tvtuk8vumcug75qcp4d00pnc42thq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAWdjZApY0D4z2YBhGKxKLZwJk9KqUn9-0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "666271817611-mb5tvtuk8vumcug75qcp4d00pnc42thq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "666271817611-4emv2okprmsin66q8em7k6cisr8c8bt7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.boardGames"
+              }
+            }
+          ]
         }
       }
     }

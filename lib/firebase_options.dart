@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '666271817611',
     projectId: 'kp-pz31-kobrin',
     storageBucket: 'kp-pz31-kobrin.firebasestorage.app',
+    androidClientId: '666271817611-c8669quc4l2s45bslgs401ifd7d0vq7q.apps.googleusercontent.com',
+    iosClientId: '666271817611-4emv2okprmsin66q8em7k6cisr8c8bt7.apps.googleusercontent.com',
     iosBundleId: 'com.example.boardGames',
   );
   static const FirebaseOptions macos = FirebaseOptions(
@@ -71,6 +73,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '666271817611',
     projectId: 'kp-pz31-kobrin',
     storageBucket: 'kp-pz31-kobrin.firebasestorage.app',
+    androidClientId: '666271817611-c8669quc4l2s45bslgs401ifd7d0vq7q.apps.googleusercontent.com',
+    iosClientId: '666271817611-4emv2okprmsin66q8em7k6cisr8c8bt7.apps.googleusercontent.com',
     iosBundleId: 'com.example.boardGames',
   );
 

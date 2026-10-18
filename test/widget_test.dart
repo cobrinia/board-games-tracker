@@ -114,8 +114,16 @@ void main() {
     await tester.tap(find.text('Profile').last);
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Sign Out'), 300);
+    // Scroll the whole button into view, not just its top edge.
+    await tester.ensureVisible(find.text('Sign Out'));
+    await tester.pumpAndSettle();
+    // The "Signed in as ..." snack bar floats over the bottom of the screen
+    // and would catch the tap; let it disappear (it lives 4 seconds).
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Sign Out'));
     await tester.pumpAndSettle();
+    expect(find.text('Sign Out?'), findsOneWidget); // dialog is open
     await tester.tap(find.text('Sign Out').last); // confirm in the dialog
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);

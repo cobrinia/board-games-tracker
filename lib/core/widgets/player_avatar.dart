@@ -38,7 +38,7 @@ class PlayerAvatar extends StatelessWidget {
     final avatar = CircleAvatar(
       radius: size / 2,
       backgroundColor: color,
-      foregroundImage: hasPhoto ? NetworkImage(url!) : null,
+      foregroundImage: hasPhoto ? NetworkImage(url) : null,
       onForegroundImageError: hasPhoto ? (_, _) {} : null,
       foregroundColor: Colors.white,
       child: Text(
