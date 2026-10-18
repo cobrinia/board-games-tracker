@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_scope.dart';
+import '../../core/auth/auth_repository.dart';
 import '../../core/data/mock_data.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/player_avatar.dart';
@@ -8,18 +10,24 @@ import '../sessions/session_history_screen.dart';
 import '../sessions/widgets/session_card.dart';
 
 /// Dashboard: greeting, summary stats and the latest played sessions.
+///
+/// The name and photo come from the signed-in Firebase user. Games and
+/// sessions are still mock data until Cloud Firestore is connected.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  static const String _userName = MockData.userName;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: Listenable.merge([MockData.games, MockData.sessions]),
+          listenable: Listenable.merge([
+            MockData.games,
+            MockData.sessions,
+            AppScope.of(context).auth.user,
+          ]),
           builder: (context, _) {
+            final AppUser? user = AppScope.of(context).auth.currentUser;
             final games = MockData.games.value;
             final sessions = MockData.sessions.value;
             final now = DateTime.now();
@@ -43,11 +51,11 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Welcome back,',
                             style: TextStyle(
                               color: AppColors.textSecondary,
@@ -55,8 +63,10 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            _userName,
-                            style: TextStyle(
+                            user?.name ?? you.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
                             ),
@@ -65,7 +75,8 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     PlayerAvatar(
-                      name: you.name,
+                      name: user?.name ?? you.name,
+                      photoUrl: user?.photoUrl,
                       color: you.color,
                       size: 44,
                       ring: true,
@@ -133,6 +144,9 @@ class HomeScreen extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
+                          settings: const RouteSettings(
+                            name: 'session_history',
+                          ),
                           builder: (_) => const SessionHistoryScreen(),
                         ),
                       ),

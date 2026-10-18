@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_scope.dart';
 import '../../core/data/mock_data.dart';
 import '../../core/data/models.dart';
 import '../../core/theme/app_colors.dart';
@@ -86,6 +87,10 @@ class _AddGameSheetState extends State<AddGameSheet> {
     initial == null
         ? MockData.addGame(game)
         : MockData.replaceGame(initial, game);
+    AppScope.of(context).analytics.logEvent(
+      initial == null ? 'game_added' : 'game_edited',
+      {'category': game.category, 'max_players': game.maxPlayers},
+    );
 
     final messenger = ScaffoldMessenger.of(context);
     Navigator.pop(context, game);

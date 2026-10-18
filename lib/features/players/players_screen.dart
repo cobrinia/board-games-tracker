@@ -68,7 +68,17 @@ class _PlayersScreenState extends State<PlayersScreen> {
             controller: controller,
             hint: 'e.g. Jane Smith',
             textInputAction: TextInputAction.done,
-            validator: Validators.required,
+            validator: (value) {
+              final error = Validators.name(
+                value,
+                emptyMessage: 'Please enter a name',
+              );
+              if (error != null) return error;
+              final taken = MockData.players.value.any(
+                (p) => p.name.toLowerCase() == value!.trim().toLowerCase(),
+              );
+              return taken ? 'This player is already in the list' : null;
+            },
           ),
         ),
         actions: [
@@ -160,6 +170,9 @@ class _PlayersScreenState extends State<PlayersScreen> {
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
+                            settings: const RouteSettings(
+                              name: 'player_profile',
+                            ),
                             builder: (_) => PlayerProfileScreen(player: player),
                           ),
                         ),

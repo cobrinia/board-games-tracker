@@ -7,7 +7,7 @@ import '../../core/utils/formatters.dart';
 import '../../core/widgets/app_buttons.dart';
 import '../../core/widgets/app_feedback.dart';
 import '../../core/widgets/badges.dart';
-import '../../core/widgets/change_photo_dialog.dart';
+import '../../core/widgets/avatar_picker_dialog.dart';
 import '../../core/widgets/circle_icon_button.dart';
 import '../../core/widgets/player_avatar.dart';
 import '../../core/widgets/stat_card.dart';
@@ -20,12 +20,15 @@ class PlayerProfileScreen extends StatelessWidget {
   final Player player;
 
   Future<void> _editProfile(BuildContext context) async {
-    final source = await showChangePhotoDialog(
+    // Other players are still mock data (Cloud Firestore comes later), so
+    // the chosen photo is not stored yet. The user's own photo is saved in
+    // Firebase Auth from Settings → Edit Profile.
+    final url = await showAvatarPickerDialog(
       context,
       name: player.name,
       color: player.color,
     );
-    if (source != null && context.mounted) {
+    if (url != null && context.mounted) {
       showSuccessSnackBar(ScaffoldMessenger.of(context), 'Profile updated');
     }
   }
@@ -150,6 +153,7 @@ class PlayerProfileScreen extends StatelessWidget {
                   onPressed: () => Navigator.push(
                     context,
                     MaterialPageRoute(
+                      settings: const RouteSettings(name: 'session_history'),
                       builder: (_) => const SessionHistoryScreen(),
                     ),
                   ),

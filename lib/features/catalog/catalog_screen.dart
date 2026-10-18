@@ -46,6 +46,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     // Root navigator: the filters screen covers the bottom bar.
     final result = await Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute<CatalogFilters>(
+        settings: const RouteSettings(name: 'filters'),
         fullscreenDialog: true,
         builder: (_) => FiltersScreen(
           initial: _filters,
@@ -136,6 +137,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
+                          settings: const RouteSettings(name: 'game_details'),
                           builder: (_) =>
                               GameDetailsScreen(game: visible[index]),
                         ),

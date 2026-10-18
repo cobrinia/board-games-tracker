@@ -18,7 +18,10 @@ class CustomTextField extends StatefulWidget {
     this.onChanged,
     this.onTap,
     this.readOnly = false,
+    this.enabled = true,
     this.maxLines = 1,
+    this.autofillHints,
+    this.onFieldSubmitted,
   });
 
   final String? label;
@@ -33,7 +36,12 @@ class CustomTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final bool readOnly;
+
+  /// False while a form is being sent: the field is greyed out.
+  final bool enabled;
   final int maxLines;
+  final Iterable<String>? autofillHints;
+  final ValueChanged<String>? onFieldSubmitted;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -52,6 +60,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
       onChanged: widget.onChanged,
       onTap: widget.onTap,
       readOnly: widget.readOnly,
+      enabled: widget.enabled,
+      autofillHints: widget.autofillHints,
+      onFieldSubmitted: widget.onFieldSubmitted,
       obscureText: widget.isPassword && _obscured,
       maxLines: widget.isPassword ? 1 : widget.maxLines,
       decoration: InputDecoration(

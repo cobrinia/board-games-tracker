@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../core/app_scope.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../catalog/add_game_sheet.dart';
 import '../catalog/catalog_screen.dart';
@@ -33,10 +34,35 @@ class _MainShellState extends State<MainShell> {
     SettingsScreen(),
   ];
 
+  /// Analytics names of the tabs (tabs are not routes, so they are logged
+  /// by hand when selected).
+  static const List<String> _tabNames = [
+    'home',
+    'catalog',
+    'players',
+    'profile',
+  ];
+
   final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
     _tabRoots.length,
     (_) => GlobalKey<NavigatorState>(),
   );
+
+  /// One analytics observer per tab navigator: an observer can be attached
+  /// to a single navigator only.
+  List<NavigatorObserver>? _tabObservers;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_tabObservers == null) {
+      final analytics = AppScope.of(context).analytics;
+      _tabObservers = [
+        for (var i = 0; i < _tabRoots.length; i++) analytics.createObserver(),
+      ];
+      analytics.logScreen(_tabNames[_currentIndex]);
+    }
+  }
 
   NavigatorState get _currentNavigator =>
       _navigatorKeys[_currentIndex].currentState!;
@@ -47,6 +73,7 @@ class _MainShellState extends State<MainShell> {
       _currentNavigator.popUntil((route) => route.isFirst);
     } else {
       setState(() => _currentIndex = index);
+      AppScope.of(context).analytics.logScreen(_tabNames[index]);
     }
   }
 
@@ -76,7 +103,10 @@ class _MainShellState extends State<MainShell> {
     switch (action) {
       case _AddAction.logSession:
         _currentNavigator.push(
-          MaterialPageRoute(builder: (_) => const LogSessionScreen()),
+          MaterialPageRoute(
+            settings: const RouteSettings(name: 'log_session'),
+            builder: (_) => const LogSessionScreen(),
+          ),
         );
       case _AddAction.addGame:
         showAddGameSheet(context);
@@ -91,6 +121,7 @@ class _MainShellState extends State<MainShell> {
       _currentNavigator.pop();
     } else if (_currentIndex != 0) {
       setState(() => _currentIndex = 0);
+      AppScope.of(context).analytics.logScreen(_tabNames[0]);
     } else {
       SystemNavigator.pop();
     }
@@ -108,6 +139,7 @@ class _MainShellState extends State<MainShell> {
             for (var i = 0; i < _tabRoots.length; i++)
               Navigator(
                 key: _navigatorKeys[i],
+                observers: [_tabObservers![i]],
                 onGenerateRoute: (_) =>
                     MaterialPageRoute(builder: (_) => _tabRoots[i]),
               ),

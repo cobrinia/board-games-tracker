@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/app_scope.dart';
 import '../../core/data/mock_data.dart';
 import '../../core/data/models.dart';
 import '../../core/theme/app_colors.dart';
@@ -149,6 +150,11 @@ class _LogSessionScreenState extends State<LogSessionScreen> {
       result: winner == null ? 'Quick log' : '${winner.score} pts',
     );
     MockData.addSession(session);
+    AppScope.of(context).analytics.logEvent('session_logged', {
+      'game': session.gameTitle,
+      'players': session.playerNames.length,
+      'quick_log': quick ? 1 : 0,
+    });
 
     final messenger = ScaffoldMessenger.of(context);
     Navigator.pop(context);

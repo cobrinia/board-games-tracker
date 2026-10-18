@@ -154,6 +154,7 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> {
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
+                        settings: const RouteSettings(name: 'log_session'),
                         builder: (_) =>
                             LogSessionScreen(initialGame: _game.title),
                       ),

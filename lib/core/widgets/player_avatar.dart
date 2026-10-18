@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../theme/app_colors.dart';
 
-/// Round avatar with the player's initials (photos come later).
+/// Round avatar with the player's initials, or their photo when
+/// [photoUrl] is set. If the photo fails to load, the initials stay visible.
 /// [ring] adds the orange outline used for the current user.
 class PlayerAvatar extends StatelessWidget {
   const PlayerAvatar({
@@ -12,9 +13,11 @@ class PlayerAvatar extends StatelessWidget {
     required this.color,
     this.size = 40,
     this.ring = false,
+    this.photoUrl,
   });
 
   final String name;
+  final String? photoUrl;
   final Color color;
   final double size;
   final bool ring;
@@ -23,15 +26,20 @@ class PlayerAvatar extends StatelessWidget {
       .trim()
       .split(RegExp(r'\s+'))
       .take(2)
+      .where((part) => part.isNotEmpty)
       .map((part) => part[0])
       .join()
       .toUpperCase();
 
   @override
   Widget build(BuildContext context) {
+    final url = photoUrl;
+    final hasPhoto = url != null && url.isNotEmpty;
     final avatar = CircleAvatar(
       radius: size / 2,
       backgroundColor: color,
+      foregroundImage: hasPhoto ? NetworkImage(url!) : null,
+      onForegroundImageError: hasPhoto ? (_, _) {} : null,
       foregroundColor: Colors.white,
       child: Text(
         _initials,

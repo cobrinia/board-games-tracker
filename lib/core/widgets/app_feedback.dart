@@ -49,6 +49,38 @@ void showSuccessSnackBar(
     );
 }
 
+/// Red error toast with a message the user can act on
+/// ("Could not sign in. Check your email and password.").
+void showErrorSnackBar(ScaffoldMessengerState messenger, String message) {
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        backgroundColor: AppColors.dangerLight,
+        duration: const Duration(seconds: 5),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: AppColors.danger.withValues(alpha: 0.4)),
+        ),
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: AppColors.danger, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+}
+
 /// "Are you sure?" dialog with Cancel and a red confirm button.
 /// Returns true when the user confirms.
 Future<bool> showConfirmDialog(

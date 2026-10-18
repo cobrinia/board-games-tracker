@@ -20,10 +20,16 @@ class SocialSignInButton extends StatelessWidget {
     super.key,
     required this.provider,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   final SocialProvider provider;
-  final VoidCallback onPressed;
+
+  /// Null disables the button (another request is running).
+  final VoidCallback? onPressed;
+
+  /// Shows a spinner instead of the logo while this provider's window is open.
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +43,12 @@ class SocialSignInButton extends StatelessWidget {
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
         ),
         onPressed: onPressed,
-        icon: FaIcon(provider.icon, size: 20, color: provider.iconColor),
+        icon: isLoading
+            ? const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : FaIcon(provider.icon, size: 20, color: provider.iconColor),
         label: Text('Sign in with ${provider.label}'),
       ),
     );
