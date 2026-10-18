@@ -22,6 +22,7 @@ class CustomTextField extends StatefulWidget {
     this.maxLines = 1,
     this.autofillHints,
     this.onFieldSubmitted,
+    this.errorText,
   });
 
   final String? label;
@@ -42,6 +43,10 @@ class CustomTextField extends StatefulWidget {
   final int maxLines;
   final Iterable<String>? autofillHints;
   final ValueChanged<String>? onFieldSubmitted;
+
+  /// Error from the server (e.g. "Incorrect password"), shown under the
+  /// field like a validation error. Local validator errors take priority.
+  final String? errorText;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -67,6 +72,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       maxLines: widget.isPassword ? 1 : widget.maxLines,
       decoration: InputDecoration(
         labelText: widget.label,
+        errorText: widget.errorText,
         hintText: widget.hint,
         suffixText: widget.suffixText,
         prefixIcon: widget.prefixIcon == null ? null : Icon(widget.prefixIcon),

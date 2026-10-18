@@ -27,9 +27,10 @@ void main() {
     await tester.tap(find.text('Sign In'));
     await tester.pumpAndSettle();
     expect(
-      find.text('Could not sign in. Check your email and password.'),
+      find.text('Incorrect password. Try again or tap "Forgot Password?".'),
       findsOneWidget,
     );
+    expect(find.text('Incorrect password'), findsOneWidget); // under field
     expect(find.byType(LoginScreen), findsOneWidget);
 
     // Right password: the gate opens the app.

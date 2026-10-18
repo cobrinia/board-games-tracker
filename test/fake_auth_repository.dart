@@ -51,10 +51,16 @@ class FakeAuthRepository extends AuthRepository {
   @override
   Future<void> signIn({required String email, required String password}) async {
     final key = email.trim();
+    if (!_passwords.containsKey(key)) {
+      throw const AuthException(
+        'No account found with this email. Check it or create an account.',
+        code: 'user-not-found',
+      );
+    }
     if (_passwords[key] != password) {
       throw const AuthException(
-        'Could not sign in. Check your email and password.',
-        code: 'invalid-credential',
+        'Incorrect password. Try again or tap "Forgot Password?".',
+        code: 'wrong-password',
       );
     }
     _user.value = _accountFor(key);

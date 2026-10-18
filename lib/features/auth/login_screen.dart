@@ -31,6 +31,11 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Which request is running; null when idle. Disables the whole form.
   String? _busyWith;
 
+  /// Errors returned by Firebase, shown under the matching field until the
+  /// user edits it.
+  String? _emailError;
+  String? _passwordError;
+
   bool get _busy => _busyWith != null;
 
   /// Sign in with Apple needs an Apple developer account and only works
@@ -49,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _signIn() async {
     FocusScope.of(context).unfocus();
+    setState(() => _emailError = _passwordError = null);
     if (!_formKey.currentState!.validate()) return;
     await _run('email', () {
       return AppScope.of(context).auth.signIn(
@@ -80,9 +86,26 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } on AuthException catch (error) {
       if (!error.isCancelled) showErrorSnackBar(messenger, error.message);
+      if (mounted) _showFieldError(error);
     } finally {
       if (mounted) setState(() => _busyWith = null);
     }
+  }
+
+  /// Highlights the field the error is about.
+  void _showFieldError(AuthException error) {
+    setState(() {
+      switch (error.code) {
+        case 'wrong-password':
+          _passwordError = 'Incorrect password';
+        case 'user-not-found':
+          _emailError = 'No account with this email';
+        case 'invalid-credential':
+          _passwordError = 'Incorrect email or password';
+        case 'invalid-email':
+          _emailError = 'The email address is not valid';
+      }
+    });
   }
 
   void _openForgotPassword() {
@@ -120,6 +143,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   autofillHints: const [AutofillHints.email],
                   enabled: !_busy,
                   validator: Validators.email,
+                  errorText: _emailError,
+                  onChanged: (_) {
+                    if (_emailError != null) {
+                      setState(() => _emailError = null);
+                    }
+                  },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
@@ -130,6 +159,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   autofillHints: const [AutofillHints.password],
                   enabled: !_busy,
                   validator: Validators.password,
+                  errorText: _passwordError,
+                  onChanged: (_) {
+                    if (_passwordError != null) {
+                      setState(() => _passwordError = null);
+                    }
+                  },
                   onFieldSubmitted: (_) => _signIn(),
                 ),
               ],

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../services/analytics_service.dart';
 import '../services/crash_reporting.dart';
@@ -30,6 +31,9 @@ class FirebaseAuthRepository extends AuthRepository {
   final ValueNotifier<AppUser?> _user = ValueNotifier(null);
   final Completer<void> _ready = Completer<void>();
   late final StreamSubscription<User?> _subscription;
+
+  /// google_sign_in must be initialized exactly once before it is used.
+  Future<void>? _googleInit;
 
   @override
   ValueListenable<AppUser?> get user => _user;
@@ -77,13 +81,34 @@ class FirebaseAuthRepository extends AuthRepository {
 
   @override
   Future<void> signInWithGoogle() => _guard(() async {
-    final provider = GoogleAuthProvider()
-      ..setCustomParameters({'prompt': 'select_account'});
-    final result = kIsWeb
-        ? await _auth.signInWithPopup(provider)
-        : await _auth.signInWithProvider(provider);
+    final UserCredential result;
+    if (kIsWeb) {
+      final provider = GoogleAuthProvider()
+        ..setCustomParameters({'prompt': 'select_account'});
+      result = await _auth.signInWithPopup(provider);
+    } else {
+      // Native Android/iOS account picker; its ID token is exchanged for a
+      // Firebase session.
+      result = await _auth.signInWithCredential(await _googleCredential());
+    }
     await _logProviderSignIn(result, 'google');
   });
+
+  /// Shows the Google account picker and returns a Firebase credential.
+  Future<AuthCredential> _googleCredential() async {
+    final google = GoogleSignIn.instance;
+    // Reads the web client id from google-services.json on Android.
+    await (_googleInit ??= google.initialize());
+    final account = await google.authenticate();
+    final idToken = account.authentication.idToken;
+    if (idToken == null) {
+      throw const AuthException(
+        'Google did not confirm the account. Please try again.',
+        code: 'no-id-token',
+      );
+    }
+    return GoogleAuthProvider.credential(idToken: idToken);
+  }
 
   @override
   Future<void> signInWithApple() => _guard(() async {
@@ -177,12 +202,12 @@ class FirebaseAuthRepository extends AuthRepository {
   @override
   Future<void> linkGoogle() => _guard(() async {
     final user = _requireUser();
-    final provider = GoogleAuthProvider()
-      ..setCustomParameters({'prompt': 'select_account'});
     if (kIsWeb) {
+      final provider = GoogleAuthProvider()
+        ..setCustomParameters({'prompt': 'select_account'});
       await user.linkWithPopup(provider);
     } else {
-      await user.linkWithProvider(provider);
+      await user.linkWithCredential(await _googleCredential());
     }
     await _refreshUser();
     await _analytics.logEvent('account_linked', {'provider': 'google'});
@@ -192,6 +217,14 @@ class FirebaseAuthRepository extends AuthRepository {
   Future<void> signOut() => _guard(() async {
     await _analytics.logEvent('logout');
     await _auth.signOut();
+    // Forget the Google account too, so the picker appears next time.
+    if (_googleInit != null) {
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (error) {
+        debugPrint('Google sign-out failed: $error');
+      }
+    }
   });
 
   // ---------------------------------------------------------------- helpers
@@ -221,7 +254,24 @@ class FirebaseAuthRepository extends AuthRepository {
     } on AuthException {
       rethrow;
     } on FirebaseAuthException catch (error) {
+      debugPrint('FirebaseAuthException: ${error.code} ${error.message}');
       throw _toAuthException(error);
+    } on GoogleSignInException catch (error, stack) {
+      debugPrint('GoogleSignInException: ${error.code} ${error.description}');
+      if (error.code == GoogleSignInExceptionCode.canceled ||
+          error.code == GoogleSignInExceptionCode.interrupted) {
+        throw const AuthException.cancelled();
+      }
+      await CrashReporting.recordNonFatal(
+        error,
+        stack,
+        reason: 'Google sign-in failed',
+      );
+      throw AuthException(
+        'Google sign-in is not available right now. Make sure a Google '
+        'account is added on this device and try again.',
+        code: 'google-${error.code.name}',
+      );
     } catch (error, stack) {
       // Not an expected auth failure: keep a report so it can be fixed.
       await CrashReporting.recordNonFatal(
@@ -264,10 +314,25 @@ class FirebaseAuthRepository extends AuthRepository {
   static AuthException _toAuthException(FirebaseAuthException error) {
     final code = error.code;
     if (_cancelledCodes.contains(code)) return const AuthException.cancelled();
-    if (_wrongCredentialCodes.contains(code) || code == 'user-not-found') {
-      return AuthException(
-        'Could not sign in. Check your email and password.',
-        code: code,
+    // With "Email enumeration protection" on (Firebase default) a wrong
+    // password and an unknown email both come back as invalid-credential.
+    if (code == 'wrong-password') {
+      return const AuthException(
+        'Incorrect password. Try again or tap "Forgot Password?".',
+        code: 'wrong-password',
+      );
+    }
+    if (code == 'user-not-found') {
+      return const AuthException(
+        'No account found with this email. Check it or create an account.',
+        code: 'user-not-found',
+      );
+    }
+    if (_wrongCredentialCodes.contains(code)) {
+      return const AuthException(
+        'Incorrect email or password. Check them and try again, or reset '
+        'your password.',
+        code: 'invalid-credential',
       );
     }
     final message = switch (code) {
